@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الاستعلام عن المقررات الدراسية</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background: linear-gradient(135deg, #0f172a, #020617);
+    color: #fff;
+    margin: 0;
+    padding: 0;
+}
+
+/* container */
+.container {
+    max-width: 700px;
+    margin: auto;
+    padding: 40px 20px;
+}
+
+/* title */
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+/* search box */
+.search-box {
+    position: relative;
+}
+
+input {
+    width: 100%;
+    padding: 15px 20px;
+    border-radius: 15px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    background: #1e293b;
+    color: white;
+    transition: 0.3s;
+}
+
+input:focus {
+    box-shadow: 0 0 15px #3b82f6;
+}
+
+/* results */
+.results {
+    margin-top: 30px;
+}
+
+/* card */
+.card {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    animation: fadeIn 0.4s ease;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+/* name */
+.name {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* number */
+.number {
+    color: #94a3b8;
+    margin: 5px 0;
+}
+
+/* courses */
+.course {
+    margin-top: 5px;
+    padding: 5px 10px;
+    background: #0f172a;
+    border-radius: 10px;
+    display: inline-block;
+    margin-right: 5px;
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+/* no result */
+.no-result {
+    text-align: center;
+    color: #94a3b8;
+    margin-top: 20px;
+}
+
+/* animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+
+<h1> بوابة الاستعلام عن المقررات الدراسية</h1>
+
+<div class="counter">
+    عدد الزوار: <span id="visitCount">...</span>
+</div>
+
+<div class="search-box">
+    <input type="text" id="search" placeholder="اكتب الاسم أو الرقم الأكاديمي...">
+</div>
+
+<div class="results" id="results"></div>
+
+
+</div>
+
+<script>
+let students = {};
+
+// تحميل البيانات
+fetch("students.json")
+.then(res => res.json())
+.then(data => {
+    students = data;
+});
+
+// البحث
+document.getElementById("search").addEventListener("input", function() {
+    const query = this.value.trim().toLowerCase();
+    const resultsDiv = document.getElementById("results");
+
+    resultsDiv.innerHTML = "";
+
+    if (!query) return;
+
+    let found = false;
+
+    for (let number in students) {
+        let student = students[number];
+
+        if (number === query || student.name.toLowerCase().includes(query)) {
+
+            found = true;
+
+            let card = document.createElement("div");
+            card.className = "card";
+
+            card.innerHTML = `
+                <div class="name">${student.name}</div>
+                <div class="number">الرقم: ${number}</div>
+                <div>عدد المواد: ${student.courses.length}</div>
+                <div>
+                    ${student.courses.map(c => `<span class="course">${c}</span>`).join("")}
+                </div>
+            `;
+
+            resultsDiv.appendChild(card);
+        }
+    }
+
+    if (!found) {
+        resultsDiv.innerHTML = `<div class="no-result">لا يوجد نتائج</div>`;
+    }
+    
+    fetch("https://api.countapi.xyz/hit/ali-students-2026/visits")
+  .then(res => res.json())
+  .then(data => {
+      document.getElementById("visitCount").innerText = data.value;
+  });
+});
+</script>
+
+</body>
+</html>
