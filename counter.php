@@ -3,7 +3,7 @@ header("Content-Type: application/json; charset=UTF-8");
 
 $file = "counter.txt";
 
-// لو الملف مش موجود
+
 if (!file_exists($file)) {
     file_put_contents($file, "0");
 }
