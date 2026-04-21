@@ -1,6 +1,8 @@
+---
+
 # 📚 Student Courses Search System
 
-A simple and fast web-based system to search for students and display their registered courses.
+A simple, fast, and practical web-based system to search for students and display their registered courses with a clean dashboard interface.
 
 ---
 
@@ -9,17 +11,34 @@ A simple and fast web-based system to search for students and display their regi
 * 🔍 Search by **student name** (Arabic supported with normalization)
 * 🔢 Search by **academic number**
 * ⚡ Fast search with limited results (Top 20)
-* 🧠 Smart Arabic text normalization (handles different letter forms)
+* 🧠 Smart Arabic text normalization:
+
+  * (أ / إ / آ → ا)
+  * (ة → ه)
+  * (ى → ي)
+* 📊 Simple **Dashboard** for viewing data
+* 🌐 دعم **تغيير اللغة (عربي / English)**
+* 📉 إزالة العناصر الثقيلة (charts) لسرعة الأداء
 * 📊 Visitor counter (stored securely on server)
-* 🔒 Backend logic hidden باستخدام PHP (no sensitive logic in frontend)
+* 🔒 Backend logic hidden باستخدام PHP
 
 ---
 
 ## 🛠️ Technologies Used
 
-* **Frontend:** HTML, CSS, JavaScript
-* **Backend:** PHP
-* **Data Processing:** Python (for generating JSON data)
+* **Frontend:**
+
+  * HTML
+  * CSS (Responsive + Dark UI)
+  * JavaScript
+
+* **Backend:**
+
+  * PHP
+
+* **Data Processing:**
+
+  * Python
 
 ---
 
@@ -28,33 +47,46 @@ A simple and fast web-based system to search for students and display their regi
 ```
 project/
 │
-├── index.html        # واجهة المستخدم
-├── search.php        # منطق البحث (Hidden logic)
-├── counter.php       # عداد الزوار
-├── students.json     # قاعدة البيانات
-├── counter.txt       # تخزين عدد الزوار
+├── index.html          # صفحة البحث الرئيسية
+├── dashboard.html      # لوحة التحكم (عرض البيانات بشكل منظم)
 │
-├── generate_data.py  # سكربت تحويل ملفات TXT إلى JSON
+├── search.php          # منطق البحث (Hidden logic)
+├── counter.php         # عداد الزوار
 │
-├── CS.txt
-├── IT.txt
-├── IS.txt
-├── gen.txt
+├── students.json       # قاعدة البيانات النهائية
+├── counter.txt         # تخزين عدد الزوار
+│
+├── py&txt/             # مجلد معالجة البيانات
+│   │
+│   ├── generate_data.py   # تحويل TXT → JSON
+│   ├── CS.txt
+│   ├── IT.txt
+│   ├── IS.txt
+│   ├── gen.txt
+│
+├── favicon.ico
+├── README.md
 ```
 
 ---
 
 ## ⚙️ How It Works
 
-### 1. Data Preparation
+### 1. Data Preparation (Python)
 
-* يتم قراءة ملفات المواد (`.txt`)
+* يتم قراءة ملفات المواد من مجلد:
+
+```
+py&txt/
+```
+
 * استخراج:
 
   * اسم الطالب
   * الرقم الأكاديمي
   * المواد
-* حفظ البيانات في ملف:
+
+* تحويل البيانات إلى:
 
 ```
 students.json
@@ -64,34 +96,62 @@ students.json
 
 ### 2. Search Process
 
-* المستخدم يكتب في مربع البحث
-* يتم إرسال الطلب إلى:
+#### في الواجهة (index.html):
+
+* المستخدم يكتب:
+
+  * اسم أو رقم أكاديمي
+
+* يتم إرسال request إلى:
 
 ```
 search.php
 ```
 
-#### داخل السيرفر:
+---
 
-* لو المدخل رقم → يبحث في الأرقام
-* لو نص → يتم:
+#### داخل السيرفر (PHP):
 
-  * تطبيع الحروف العربية
-  * البحث في الأسماء
+* إذا كان الإدخال رقم:
+
+  * يتم البحث مباشرة في الأرقام
+
+* إذا كان نص:
+
+  * يتم تطبيع النص العربي
+  * ثم البحث داخل الأسماء
 
 ---
 
-### 3. Visitor Counter
+### 3. Dashboard
 
-* عند أول عملية بحث:
+* صفحة:
 
-  * يتم استدعاء:
+```
+dashboard.html
+```
+
+تعرض:
+
+* البيانات بشكل منظم
+* واجهة نظيفة بدون عناصر ثقيلة
+* مناسبة للموبايل
+
+✔ تم حل مشكلة:
+
+* القائمة الجانبية (Sidebar) أصبحت ثابتة (Fixed)
+
+---
+
+### 4. Visitor Counter
+
+* عند أول استخدام:
 
 ```
 counter.php?action=increment
 ```
 
-* يتم تحديث العداد في:
+* يتم تحديث:
 
 ```
 counter.txt
@@ -115,9 +175,10 @@ http://localhost:8000
 
 ---
 
-### 2. توليد البيانات (اختياري)
+### 2. توليد البيانات
 
 ```bash
+cd py&txt
 python generate_data.py
 ```
 
@@ -125,21 +186,23 @@ python generate_data.py
 
 ## 🔒 Security Notes
 
-* لا يوجد أي API ظاهر للمستخدم
-* تم نقل كل المنطق إلى السيرفر
-* حماية من:
+* ❌ لا يوجد أي logic مهم في الـ frontend
+* ✅ كل العمليات تتم داخل PHP
+* 🔐 حماية من:
 
   * سرقة البيانات
   * التلاعب بالعداد
+  * تحميل JSON مباشرة
 
 ---
 
 ## 💡 Future Improvements
 
-* ⚡ استخدام قاعدة بيانات بدل JSON
-* 🔎 دعم البحث المركب (اسم + رقم)
-* 📈 تحسين الأداء باستخدام indexing
-* 🌐 API خاص بالتطبيقات الخارجية
+* 🗄️ استخدام Database بدل JSON (MySQL)
+* 🔎 بحث متقدم (اسم + رقم + مادة)
+* ⚡ تحسين الأداء باستخدام indexing
+* 📡 إنشاء REST API
+* 👤 نظام تسجيل دخول (Admin Dashboard)
 
 ---
 
@@ -152,3 +215,5 @@ Developed by **Ali Ashraf**
 ## ⭐ License
 
 This project is open-source and free to use.
+
+---
