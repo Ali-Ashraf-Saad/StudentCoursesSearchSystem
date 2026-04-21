@@ -132,10 +132,53 @@
           transform: translateY(0);
         }
       }
+        .dashboard-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #16537e, #cfe2f3);
+  color: #000;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(0,200,255,0.4);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.dashboard-btn .text {
+  opacity: 0;
+  max-width: 0;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.dashboard-btn:hover {
+  padding: 10px 18px;
+}
+
+.dashboard-btn:hover .text {
+  opacity: 1;
+  max-width: 120px;
+}
+
+.dashboard-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 0 25px rgba(0,200,255,0.7);
+}
     </style>
   </head>
 
   <body>
+      <button class="dashboard-btn" onclick="goDashboard()">
+  <span>📊</span>
+  <span class="text">Dashboard</span>
+</button>
     <div class="container">
       <h1>الاستعلام عن المقررات الدراسية</h1>
 
@@ -233,6 +276,11 @@
             });
         }, 300);
       });
+
+function goDashboard() {
+  window.location.href = "dashboard.html";
+}
+
     </script>
     
   </body>
