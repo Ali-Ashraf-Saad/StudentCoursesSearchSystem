@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Africa/Cairo');
 header("Content-Type: application/json; charset=UTF-8");
 
 $MAX_RESULTS = 20;
@@ -19,8 +20,11 @@ function parseDate($dateStr) {
     return $date ?: null;
 }
 
-$query = $_GET['q'] ?? '';
-$query = trim($query);
+$query   = $_GET['q'] ?? '';
+$query   = trim($query);
+$commit  = ($_GET['commit'] ?? '') === '1';
+$clientId = $_GET['client_id'] ?? '';
+
 if (!$query) {
     echo json_encode(["results" => []]);
     exit;
@@ -33,7 +37,6 @@ $students = json_decode(file_get_contents("data/students.json"), true);
 $courses  = json_decode(file_get_contents("data/courses.json"), true);
 $exams    = json_decode(file_get_contents("data/exams.json"), true);
 
-// روابط Google Drive للمواد
 $driveLinks = [
     'CS438' => 'https://drive.google.com/drive/folders/12DyDQkgaPOgR7UiBQN_-vGJsaI2hI77F',
     'IS381' => 'https://drive.google.com/drive/folders/12DyDQkgaPOgR7UiBQN_-vGJsaI2hI77F',
@@ -69,11 +72,8 @@ foreach ($exams as $exam) {
 }
 
 $results = [];
-$count = 0;
 
 foreach ($students as $student) {
-    if ($count >= $MAX_RESULTS) break;
-
     $sid   = $student['id'];
     $name  = $student['name'];
     $dept  = $student['department'] ?? '';
@@ -86,7 +86,6 @@ foreach ($students as $student) {
         $nameNorm = normalizeArabic($name);
         if (strpos($nameNorm, $queryNorm) !== false) $match = true;
     }
-
     if (!$match) continue;
 
     $coursesList = [];
@@ -97,11 +96,10 @@ foreach ($students as $student) {
             'code'      => $code,
             'name'      => $courseName,
             'exam'      => $examInfo,
-            'driveLink' => $driveLinks[$code] ?? null   // رابط المادة
+            'driveLink' => $driveLinks[$code] ?? null
         ];
     }
 
-    // ترتيب المواد حسب التاريخ الأقرب
     usort($coursesList, function($a, $b) {
         $dateA = isset($a['exam']['date']) ? parseDate($a['exam']['date']) : null;
         $dateB = isset($b['exam']['date']) ? parseDate($b['exam']['date']) : null;
@@ -117,7 +115,15 @@ foreach ($students as $student) {
         "department" => $dept,
         "courses"    => $coursesList
     ];
-    $count++;
+}
+
+if ($commit && count($results) > 0 && count($results) < 5) {
+    if (!file_exists('data')) mkdir('data', 0755, true);
+
+    $counterFile = 'counter.txt';
+    if (!file_exists($counterFile)) file_put_contents($counterFile, '0');
+    $c = (int)file_get_contents($counterFile) + 1;
+    file_put_contents($counterFile, $c);
 }
 
 echo json_encode(["results" => $results], JSON_UNESCAPED_UNICODE);

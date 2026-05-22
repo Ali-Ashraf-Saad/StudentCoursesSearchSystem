@@ -1,8 +1,7 @@
 <?php
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
-header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
+header("Expires: 0");
 ?>
 <!doctype html>
 <html lang="ar">
@@ -11,6 +10,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>الاستعلام عن المقررات الدراسية</title>
+
+    <!-- منع التخزين المؤقت للمتصفح -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
 
     <!-- مكتبة html2canvas لتصدير الصورة -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -32,26 +36,79 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         max-width: 700px; margin: auto; padding: 40px 20px; flex: 1;
       }
 
+      .logo-wrapper {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .logo-img {
+        width: 80px;
+        height: auto;
+        border-radius: 24px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(59, 130, 246, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: #1e293b;
+        padding: 4px;
+        cursor: pointer;
+      }
+
+      .logo-img:hover {
+        transform: scale(1.05);
+        box-shadow: 0 12px 25px rgba(59, 130, 246, 0.4), 0 0 0 2px #3b82f6;
+      }
+
       h1 { text-align: center; margin-bottom: 30px; font-weight: 600; }
 
       .counter { text-align: center; margin-bottom: 20px; color: #94a3b8; font-size: 14px; }
 
-      .search-box { position: relative; }
-
-      input {
-        width: 100%; padding: 15px 20px; border-radius: 15px; border: none;
-        outline: none; font-size: 16px; background: #1e293b; color: white; transition: 0.3s;
+      .search-box {
+        position: relative;
       }
 
-      input:focus { box-shadow: 0 0 15px #3b82f6; }
+      .search-box input {
+        width: 100%;
+        padding: 15px 50px 15px 20px;
+        border-radius: 15px;
+        border: none;
+        outline: none;
+        font-size: 16px;
+        background: #1e293b;
+        color: white;
+        transition: 0.3s;
+      }
 
-      /* ---------- سجل البحث ---------- */
+      .search-box input:focus {
+        box-shadow: 0 0 15px #3b82f6;
+      }
+
+      .search-box .clear-btn {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 22px;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 50%;
+        line-height: 1;
+        display: none;
+        transition: background 0.2s, color 0.2s;
+      }
+
+      .search-box .clear-btn:hover {
+        color: #f87171;
+        background: rgba(255,255,255,0.1);
+      }
+
       .history {
         margin-top: 12px;
         background: rgba(30, 41, 59, 0.6);
         border-radius: 12px;
         padding: 10px;
-        display: none; /* يظهر عند وجود سجل */
+        display: none;
       }
 
       .history-label {
@@ -99,8 +156,13 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       .history-delete:hover { color: #f87171; }
 
       .history-clear {
-        text-align: left; color: #f59e0b; font-size: 13px;
-        cursor: pointer; padding: 4px 8px; border-radius: 6px;
+        display: inline-block;
+        width: auto;
+        color: #f59e0b;
+        font-size: 13px;
+        cursor: pointer;
+        padding: 4px 12px;
+        border-radius: 6px;
         transition: background 0.2s;
       }
 
@@ -134,10 +196,10 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       .exam-details span { white-space: nowrap; }
       .no-exam { color: #f59e0b; font-style: italic; }
       .no-result { text-align: center; color: #94a3b8; margin-top: 20px; }
+      .remaining-time { font-weight: 600; margin-top: 4px; display: block; }
 
-      /* زر تصدير الصورة */
       .export-btn-container {
-        display: none; /* يظهر عند وجود نتائج */
+        display: none;
         text-align: center;
         margin: 20px 0;
       }
@@ -163,7 +225,6 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         box-shadow: 0 8px 25px rgba(59,130,246,0.6);
       }
 
-      /* التصميم المخفي للصورة المصدرة */
       #export-card {
         position: absolute;
         left: -9999px;
@@ -267,10 +328,21 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       .dashboard-btn:hover { padding: 10px 18px; }
       .dashboard-btn:hover .text { opacity: 1; max-width: 120px; }
       .dashboard-btn:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 0 25px rgba(0,200,255,0.7); }
-        .dashboard-btn .icon {
-    width: 25px;
-    height: 25px;
-    margin-right: 8px;
+      .dashboard-btn .icon {
+        width: 25px;
+        height: 25px;
+        margin-right: 8px;
+      }
+      /* معالجة تغير لون الخلفية عند الإكمال التلقائي */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;  /* يفرض لون الخلفية الداكن */
+    -webkit-text-fill-color: white !important;                 /* يفرض لون النص أبيض */
+    caret-color: white !important;                             /* لون المؤشر */
+    border: none !important;                                   /* يمنع أي حدود زرقاء */
+    transition: background-color 5000s ease-in-out 0s;         /* يمنع وميض الانتقال */
 }
     </style>
   </head>
@@ -282,6 +354,12 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     </button>
 
     <div class="container">
+      <div class="logo-wrapper">
+        <a href="https://www.facebook.com/profile.php?id=61569852016021" target="_blank" rel="noopener noreferrer">
+          <img src="images/LogoFCI.jpeg" alt="شعار الكلية" class="logo-img">
+        </a>
+      </div>
+
       <h1>الاستعلام عن المقررات الدراسية</h1>
 
       <div class="counter">
@@ -290,16 +368,15 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
       <div class="search-box">
         <input type="text" id="search" placeholder="اكتب الاسم أو الرقم الأكاديمي..." />
+        <button class="clear-btn" id="clearSearchBtn" title="مسح البحث">✕</button>
       </div>
 
-      <!-- سجل البحث -->
       <div class="history" id="history">
         <div class="history-label">سجل البحث:</div>
         <div class="history-list" id="history-list"></div>
         <div class="history-clear" id="clear-history">مسح السجل</div>
       </div>
 
-      <!-- زر تصدير الصورة يظهر بعد البحث -->
       <div class="export-btn-container" id="export-container">
         <button class="export-btn" onclick="exportAsImage()">
           📸 تحميل صورة المواد
@@ -309,7 +386,6 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       <div class="results" id="results"></div>
     </div>
 
-    <!-- العنصر المخفي للتصدير -->
     <div id="export-card"></div>
 
     <footer>
@@ -317,7 +393,37 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     </footer>
 
     <script>
-      // ---------- إدارة السجل ----------
+      // ═══════════════════════════════════════════
+      //  وضع المحاكاة الزمنية للاختبار
+      // ═══════════════════════════════════════════
+      const SIMULATION_MODE = false;                  // اجعلها false للتشغيل الحقيقي
+      const SIMULATION_START = '2026-05-20T10:00:00'; // وقت بداية المحاكاة
+
+      let pageLoadRealTime = null;
+      let simulationStartMs = null;
+
+      function initSimulation() {
+        if (SIMULATION_MODE) {
+          simulationStartMs = new Date(SIMULATION_START).getTime();
+          pageLoadRealTime = Date.now();
+        }
+      }
+
+      function simulatedNow() {
+        if (!SIMULATION_MODE || !pageLoadRealTime || !simulationStartMs) {
+          return new Date();
+        }
+        const realNow = Date.now();
+        const elapsed = realNow - pageLoadRealTime;
+        return new Date(simulationStartMs + elapsed);
+      }
+
+      // استدعاء التهيئة
+      initSimulation();
+
+      // ═══════════════════════════════════════════
+      //  إدارة سجل البحث
+      // ═══════════════════════════════════════════
       const HISTORY_KEY = 'search_history';
       const MAX_HISTORY = 10;
 
@@ -375,9 +481,9 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           el.addEventListener('click', function() {
             const query = this.getAttribute('data-query');
             document.getElementById('search').value = query;
-            addToHistory(query);
-            lastCommittedQuery = query;
-            document.getElementById('search').dispatchEvent(new Event('input'));
+            lastPolledValue = query;
+            clearBtn.style.display = 'block';
+            doCommitSearch(query);
           });
         });
 
@@ -396,13 +502,40 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         }
       });
 
-      // ---------- البحث الرئيسي ----------
-      const MAX_RESULTS = 20;
-      let debounceTimer = null;
-      let counted = false;
-      let lastCommittedQuery = '';
-      let currentStudentData = null; // لتخزين بيانات الطالب الحالي للتصدير
+      // ═══════════════════════════════════════════
+      //  توليد Client ID
+      // ═══════════════════════════════════════════
+      function getClientId() {
+        let id = localStorage.getItem('client_id');
+        if (!id) {
+          id = 'client_' + Math.random().toString(36).substr(2, 9) + Date.now();
+          localStorage.setItem('client_id', id);
+        }
+        return id;
+      }
+      const CLIENT_ID = getClientId();
 
+      // ═══════════════════════════════════════════
+      //  عناصر البحث
+      // ═══════════════════════════════════════════
+      const searchInput = document.getElementById("search");
+      const clearBtn = document.getElementById("clearSearchBtn");
+      const resultsDiv = document.getElementById("results");
+      const exportContainer = document.getElementById("export-container");
+
+      let debounceTimer = null;
+      let autoCommitTimer = null;
+      let committedQuery = '';
+      let lastPolledValue = '';
+      let currentStudentData = null;
+      let commitBlocked = false;
+
+      // مؤقت التحديث التلقائي للوقت
+      let remainingTimer = null;
+
+      // ═══════════════════════════════════════════
+      //  عداد الزوار (قراءة فقط)
+      // ═══════════════════════════════════════════
       function loadCounter() {
         fetch("counter.php?action=get")
           .then(res => res.json())
@@ -418,126 +551,321 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       loadCounter();
       setInterval(loadCounter, 5000);
 
-      const searchInput = document.getElementById("search");
+      // ═══════════════════════════════════════════
+      //  زر مسح البحث
+      // ═══════════════════════════════════════════
+      function toggleClearButton() {
+        clearBtn.style.display = searchInput.value.trim() ? 'block' : 'none';
+      }
 
-      searchInput.addEventListener("input", function () {
-        clearTimeout(debounceTimer);
+      clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        toggleClearButton();
+        lastPolledValue = '';
+        committedQuery = '';
+        resultsDiv.innerHTML = '';
+        exportContainer.style.display = 'none';
+        currentStudentData = null;
+        clearTimeout(remainingTimer);
+        searchInput.focus();
+        clearAutoCommit();
+      });
 
-        const value = this.value.trim();
-        const resultsDiv = document.getElementById("results");
-        const exportContainer = document.getElementById("export-container");
+      searchInput.addEventListener('input', toggleClearButton);
+      toggleClearButton();
 
-        if (value === '') {
-          if (lastCommittedQuery !== '') {
-            addToHistory(lastCommittedQuery);
-            lastCommittedQuery = '';
+      // ═══════════════════════════════════════════
+      //  تحليل تاريخ الامتحان
+      // ═══════════════════════════════════════════
+      function parseExamDateTime(dateStr, timeStr) {
+        try {
+          let full = (dateStr || '').trim();
+          if (timeStr) full += ' ' + timeStr.trim();
+
+          const patterns = [
+            /(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})\s+(\d{1,2})[.:](\d{2})/,
+            /(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})\s+(\d{1,2})[.:](\d{2})/,
+          ];
+
+          for (const pat of patterns) {
+            const m = full.match(pat);
+            if (m) {
+              let y, mo, d, h, mi;
+              if (pat === patterns[0]) {
+                y = +m[1]; mo = +m[2]; d = +m[3];
+              } else {
+                d = +m[1]; mo = +m[2]; y = +m[3];
+              }
+              h = +m[4]; mi = +m[5];
+
+              const timePart = (timeStr || '').trim();
+              if (timePart) {
+                if (/مساء|م|pm/i.test(timePart) && h < 12) h += 12;
+                else if (/صباح|ص|am/i.test(timePart) && h === 12) h = 0;
+              }
+              return new Date(y, mo - 1, d, h, mi, 0);
+            }
           }
-          counted = false;
-          resultsDiv.innerHTML = "";
-          exportContainer.style.display = 'none';
-          currentStudentData = null;
+
+          // محاولة استخراج التاريخ فقط (بدون وقت)
+          const dateOnly = full.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+          if (dateOnly) {
+            const y = +dateOnly[1], mo = +dateOnly[2], d = +dateOnly[3];
+            let h = 0, mi = 0;
+            const timePart = (timeStr || '').trim();
+            if (timePart) {
+              const tm = timePart.match(/(\d{1,2})[.:](\d{2})/);
+              if (tm) {
+                h = +tm[1];
+                mi = +tm[2];
+                if (/مساء|م|pm/i.test(timePart) && h < 12) h += 12;
+                else if (/صباح|ص|am/i.test(timePart) && h === 12) h = 0;
+              }
+            }
+            return new Date(y, mo - 1, d, h, mi, 0);
+          }
+        } catch (e) {}
+        return null;
+      }
+
+      // ═══════════════════════════════════════════
+      //  حساب الوقت المتبقي (باستخدام المحاكاة)
+      // ═══════════════════════════════════════════
+      function getRemainingTimeFromDate(examDate) {
+        const now = simulatedNow();  // هنا نستخدم الوقت المحاكى
+        const diffMs = examDate - now;
+        if (diffMs <= 0) return '✅ منتهي';
+
+        const diffDays = Math.floor(diffMs / 86400000);
+        const diffHours = Math.floor((diffMs % 86400000) / 3600000);
+        const diffMinutes = Math.floor((diffMs % 3600000) / 60000);
+        const diffSeconds = Math.floor((diffMs % 60000) / 1000);
+
+        if (diffDays === 0 && diffHours === 0 && diffMinutes === 0) {
+          return `⏳ متبقي ${diffSeconds} ثانية`;
+        }
+
+        let res = '⏳ متبقي ';
+        if (diffDays > 0) res += `${diffDays} يوم `;
+        if (diffHours > 0 || diffDays === 0) res += `${diffHours} ساعة `;
+        if (diffDays === 0 && diffHours < 10 && diffMinutes > 0) res += `و ${diffMinutes} دقيقة`;
+        return res.trim();
+      }
+
+      // ═══════════════════════════════════════════
+      //  التحديث التلقائي الذكي للوقت المتبقي
+      // ═══════════════════════════════════════════
+      function updateAllRemainingTimes() {
+        const elements = document.querySelectorAll('.remaining-time[data-exam-datetime]');
+        let minRemainingMs = Infinity;
+
+        elements.forEach(el => {
+          const iso = el.getAttribute('data-exam-datetime');
+          if (!iso) return;
+          const examDate = new Date(iso);
+          if (isNaN(examDate.getTime())) return;
+          const remainingMs = examDate - simulatedNow();  // استخدام المحاكاة
+          el.innerHTML = getRemainingTimeFromDate(examDate);
+          if (remainingMs > 0 && remainingMs < minRemainingMs) {
+            minRemainingMs = remainingMs;
+          }
+        });
+
+        if (minRemainingMs === Infinity || minRemainingMs <= 0) {
+          clearTimeout(remainingTimer);
+          remainingTimer = null;
           return;
         }
 
-        debounceTimer = setTimeout(() => {
-          if (!counted) {
-            counted = true;
-            fetch("counter.php?action=increment")
-              .then(res => res.json())
-              .then(data => {
-                const el = document.getElementById("visitCount");
-                if (el) el.innerText = data.count;
-              });
-          }
+        let delay;
+        if (minRemainingMs <= 60000) {
+          delay = 1000;
+        } else if (minRemainingMs <= 3600000) {
+          delay = 60000;
+        } else {
+          delay = 3600000;
+        }
 
-          fetch("search.php?q=" + encodeURIComponent(value))
-            .then(res => res.json())
-            .then(data => {
-              resultsDiv.innerHTML = "";
+        clearTimeout(remainingTimer);
+        remainingTimer = setTimeout(updateAllRemainingTimes, delay);
+      }
 
-              if (!data.results.length) {
-                resultsDiv.innerHTML = `<div class="no-result">لا يوجد نتائج</div>`;
-                exportContainer.style.display = 'none';
-                currentStudentData = null;
-              } else {
-                const fragment = document.createDocumentFragment();
-                // نأخذ أول طالب للتصدير (أو يمكن تخصيصه حسب الحاجة)
-                currentStudentData = data.results[0];
+      function startRemainingUpdates() {
+        clearTimeout(remainingTimer);
+        updateAllRemainingTimes();
+      }
 
-                data.results.forEach(item => {
-                  const card = document.createElement("div");
-                  card.className = "card";
+      function clearAutoCommit() {
+  if (autoCommitTimer) {
+    clearTimeout(autoCommitTimer);
+    autoCommitTimer = null;
+  }
+}
 
-                  let coursesHtml = "";
-                  if (item.courses && item.courses.length > 0) {
-                    coursesHtml = item.courses.map(course => {
-                      let examHtml = "";
-                      if (course.exam) {
-                        examHtml = `
-                          <div class="exam-details">
-                            <span>🔢 لجنة ${course.exam.committee}</span>
-                            <span>📍 ${course.exam.room}</span>
-                            <span>📅 ${course.exam.day} ${course.exam.date}</span>
-                            <span>🕒 ${course.exam.period} (${course.exam.time})</span>
-                          </div>`;
-                      } else {
-                        examHtml = `<div class="no-exam">لم تحدد اللجنة بعد</div>`;
-                      }
+function scheduleAutoCommit(query) {
+  clearAutoCommit();
+  // إذا لم يكن هناك نتائج، أو تم commit مسبقاً، لا داعي
+  if (!query || query === committedQuery) return;
+  autoCommitTimer = setTimeout(() => {
+    // تأكد أن النص لا يزال نفسه ولم يتغير
+    if (searchInput.value.trim() === query && query !== committedQuery) {
+      doCommitSearch(query);
+    }
+  }, 1500); // ثانية ونصف بعد آخر توقف
+}
 
-                      const courseTitleHtml = course.driveLink
-                        ? `<a href="${course.driveLink}" target="_blank" 
-                             style="color:#60a5fa; text-decoration:none;"
-                             onmouseover="this.style.textDecoration='underline'"
-                             onmouseout="this.style.textDecoration='none'">
-                             📘 ${course.name} (${course.code})
-                           </a>`
-                        : `📘 ${course.name} (${course.code})`;
+      // ═══════════════════════════════════════════
+      //  البحث المباشر (live) بدون زيادة العداد
+      // ═══════════════════════════════════════════
+function doLiveSearch(query) {
+  clearAutoCommit(); // ⬅️ أضف هذا السطر
+  if (!query) {
+    resultsDiv.innerHTML = '';
+    exportContainer.style.display = 'none';
+    currentStudentData = null;
+    clearTimeout(remainingTimer);
+    return;
+  }
+  fetch(`search.php?q=${encodeURIComponent(query)}`)
+    .then(r => r.json())
+    .then(data => {
+      renderResults(data);
+      scheduleAutoCommit(query); // ⬅️ أضف هذا السطر
+    });
+}
+      // ═══════════════════════════════════════════
+      //  البحث المثبت (commit) - يزيد العداد
+      // ═══════════════════════════════════════════
+function doCommitSearch(query) {
+  if (!query || commitBlocked || query === committedQuery) return;
+  commitBlocked = true;
+  fetch(`search.php?q=${encodeURIComponent(query)}&commit=1&client_id=${encodeURIComponent(CLIENT_ID)}`)
+    .then(r => r.json())
+    .then(data => {
+      // إذا كانت النتيجة المعروضة حالياً تطابق أول نتيجة في الـ commit
+      if (currentStudentData && data.results.length > 0) {
+        const newFirst = data.results[0];
+        if (newFirst.number === currentStudentData.number && 
+            newFirst.name   === currentStudentData.name) {
+          // نفس الطالب معروض بالفعل، لا نعيد الرسم
+          committedQuery = query;
+          loadCounter();                     // تحديث العداد فوراً
+          setTimeout(() => { commitBlocked = false; }, 500);
+          return;                            // خروج بدون renderResults
+        }
+      }
 
-                      return `
-                        <div class="course-item">
-                          <div class="course-name">${courseTitleHtml}</div>
-                          ${examHtml}
-                        </div>`;
-                    }).join("");
-                  } else {
-                    coursesHtml = `<div>لا توجد مواد مسجلة</div>`;
-                  }
+      // في حالة عدم التطابق أو عدم وجود نتائج سابقة – نعرض البيانات
+      renderResults(data);
+      addToHistory(query);
+      committedQuery = query;
+      loadCounter();
+      setTimeout(() => { commitBlocked = false; }, 500);
+    })
+    .catch(() => { commitBlocked = false; });
+}
+      // ═══════════════════════════════════════════
+      //  عرض النتائج (مع الوقت المتبقي)
+      // ═══════════════════════════════════════════
+      function renderResults(data) {
+        resultsDiv.innerHTML = '';
+        if (!data.results.length) {
+          resultsDiv.innerHTML = `<div class="no-result">لا يوجد نتائج</div>`;
+          exportContainer.style.display = 'none';
+          currentStudentData = null;
+          clearTimeout(remainingTimer);
+          return;
+        }
+        currentStudentData = data.results[0];
+        const fragment = document.createDocumentFragment();
+        data.results.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          const coursesHtml = item.courses.map(course => {
+            let examHtml = '';
+            if (course.exam) {
+              const examDateObj = parseExamDateTime(course.exam.date, course.exam.time);
+              const remaining = examDateObj ? getRemainingTimeFromDate(examDateObj) : 'وقت الامتحان غير معروف';
+              const examDateTimeISO = examDateObj ? examDateObj.toISOString() : '';
+              examHtml = `
+                <div class="exam-details">
+                  <span>🔢 لجنة ${course.exam.committee}</span>
+                  <span>📍 ${course.exam.room}</span>
+                  <span>📅 ${course.exam.day} ${course.exam.date}</span>
+                  <span>🕒 ${course.exam.period} (${course.exam.time})</span>
+                </div>
+                <div class="remaining-time" data-exam-datetime="${examDateTimeISO}">${remaining}</div>`;
+            } else {
+              examHtml = `<div class="no-exam">لم تحدد اللجنة بعد</div>`;
+            }
+            const titleHtml = course.driveLink
+              ? `<a href="${course.driveLink}" target="_blank" style="color:#60a5fa;text-decoration:none;">📘 ${course.name} (${course.code})</a>`
+              : `📘 ${course.name} (${course.code})`;
+            return `<div class="course-item"><div class="course-name">${titleHtml}</div>${examHtml}</div>`;
+          }).join('') || `<div>لا توجد مواد مسجلة</div>`;
+          card.innerHTML = `
+            <div class="name">${item.name}</div>
+            <div class="number">الرقم: ${item.number}</div>
+            <div>عدد المواد: ${item.courses.length}</div>
+            ${coursesHtml}`;
+          fragment.appendChild(card);
+        });
+        resultsDiv.appendChild(fragment);
+        exportContainer.style.display = 'block';
+        startRemainingUpdates();
+      }
 
-                  card.innerHTML = `
-                    <div class="name">${item.name}</div>
-                    <div class="number">الرقم: ${item.number}</div>
-                    <div>عدد المواد: ${item.courses.length}</div>
-                    ${coursesHtml}`;
-                  fragment.appendChild(card);
-                });
-                resultsDiv.appendChild(fragment);
-                exportContainer.style.display = 'block'; // إظهار زر التصدير
-              }
+      // ═══════════════════════════════════════════
+      //  أحداث حقل البحث (live + commit)
+      // ═══════════════════════════════════════════
+      // Polling كل 200ms لالتقاط الإكمال التلقائي
+      setInterval(() => {
+        const val = searchInput.value.trim();
+        if (val === lastPolledValue) return;
+        lastPolledValue = val;
+        clearBtn.style.display = val ? 'block' : 'none';
+        clearTimeout(debounceTimer);
+        if (val === '') {
+          committedQuery = '';
+          resultsDiv.innerHTML = '';
+          exportContainer.style.display = 'none';
+          currentStudentData = null;
+          clearTimeout(remainingTimer);
+          clearAutoCommit();
+          return;
+        }
+        debounceTimer = setTimeout(() => doLiveSearch(val), 300);
+      }, 200);
 
-              lastCommittedQuery = value;
-            });
-        }, 300);
-      });
-
-      searchInput.addEventListener("keydown", function(e) {
-        if (e.key === "Enter") {
+      // Enter -> commit
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
           const val = this.value.trim();
-          if (val) {
-            addToHistory(val);
-            lastCommittedQuery = val;
+          if (val && val !== committedQuery) {
+            doCommitSearch(val);
             this.blur();
           }
         }
       });
 
-      // ---------- تصدير الصورة ----------
+      // Blur -> commit إذا كان النص قد تغير
+      searchInput.addEventListener('blur', function() {
+        const val = this.value.trim();
+        if (val && val !== committedQuery && !commitBlocked) {
+          doCommitSearch(val);
+        }
+      });
+
+      // ═══════════════════════════════════════════
+      //  تصدير صورة (بدون الوقت المتبقي)
+      // ═══════════════════════════════════════════
       function exportAsImage() {
         if (!currentStudentData) return;
 
         const exportCard = document.getElementById('export-card');
         const student = currentStudentData;
 
-        // بناء محتوى البطاقة
         let coursesExportHtml = '';
         student.courses.forEach(course => {
           let examHtml = '';
@@ -567,17 +895,15 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             <div style="color:#94a3b8; margin-top:5px;">عدد المواد: ${student.courses.length}</div>
           </div>
           ${coursesExportHtml || '<div style="text-align:center; color:#94a3b8;">لا توجد مواد مسجلة</div>'}
-          <div class="watermark">تم إنشاؤه بواسطة نظام الاستعلام عن المقررات</div>
+          <div class="watermark">StudentsCourses V2 · Developed by Ali Ashraf</div>
         `;
 
-        // استخدام html2canvas لالتقاط الصورة
         html2canvas(exportCard, {
           backgroundColor: null,
-          scale: 2, // دقة أعلى
+          scale: 2,
           useCORS: true,
           allowTaint: true
         }).then(canvas => {
-          // تحويل canvas إلى رابط تنزيل
           const link = document.createElement('a');
           link.download = `student_${student.number}_courses.png`;
           link.href = canvas.toDataURL('image/png');
@@ -592,6 +918,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         window.location.href = "dashboard.html";
       }
 
+      // تهيئة سجل البحث
       renderHistory();
     </script>
   </body>
